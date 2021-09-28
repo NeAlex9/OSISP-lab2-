@@ -14,8 +14,12 @@ vector<vector<string>> stringMatrix = {
 	{"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds"},
 	{"a", "d", "s", "d"},
 	{"", "", "", ""},
-	{"adыыыыыыыыыыыs", "dsыффффффффффффффффффfsd", "sdf", "ds"}
+	{"adыыыыыыыыыыыs", "dsыффффффффффффффффффfsd", "sdf", "ds"},
+	{"a", "d", "s", "d"},
+	{"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds"},
+	{"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds"}
 };
+static HBRUSH hBrush = CreateSolidBrush(RGB(0, 0, 0));
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
 	WNDCLASSEX wcex;
@@ -38,18 +42,40 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	hWnd = CreateWindow(
 		L"TableBuilderClass",
 		L"Flexible Table",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		1000,
-		1000,
+		WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX ^ WS_MINIMIZEBOX,
+		CW_USEDEFAULT, CW_USEDEFAULT, 1000, 700,
 		NULL,
 		NULL,
 		hInstance, NULL
 	);
 
+	HWND hWndEditRow = CreateWindow(
+		L"Edit", 
+		L"", 
+		WS_CHILD | WS_VISIBLE | WS_BORDER, 
+		70, 50, 120, 20, 
+		hWnd, NULL, NULL, NULL);
+
+	HWND hWndEditColumn = CreateWindow(
+		L"Edit",
+		L"",
+		WS_CHILD | WS_VISIBLE | WS_BORDER,
+		230, 50, 120, 20,
+		hWnd, NULL, NULL, NULL);
+
+	HWND hwndButton = CreateWindow(
+		L"BUTTON", 
+		L"OK",      
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		400, 50, 60, 20,        
+		hWnd,     
+		NULL,       
+		(HINSTANCE)GetWindowLongPtr(hWnd, GWLP_HINSTANCE),
+		NULL);      
+
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
+
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
@@ -69,6 +95,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 	switch (msg) {
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
+		TextOut(hdc, 90, 30, L"Row", lstrlen(L"Row"));
+		TextOut(hdc, 250, 30, L"Column", lstrlen(L"Column"));
 		RECT rec;
 		GetWindowRect(hwnd, &rec);
 		xStart = 30;
