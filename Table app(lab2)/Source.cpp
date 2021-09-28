@@ -1,16 +1,18 @@
 ﻿#include <Windows.h>
 #include <commctrl.h>
+#include <ios>
 #include <string>
 #include <vector>
 #define UNICODE
-#define DELTA 3
 using namespace std;
+
+#define PADDING 20
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void CreateTable(HDC, int, int, int);
 vector<vector<string>> stringMatrix = {
-	{"ads", "dsfsd", "sdf", "ds"},
-	{"ads", "dsfsd", "sdf", "ds"},
+	{"a", "dkkkkkkkkkkkkkyghjiuygvhjgiyufghi7ygudasdasdasdsadd", "sdf", "ds"},
+	{"a", "d", "s", "d"},
 	{"ads", "dsfsd", "sdf", "ds"},
 	{"ads", "dsfsd", "sdf", "ds"}
 };
@@ -33,9 +35,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	wcex.hIconSm = wcex.hIcon;
 	RegisterClassEx(&wcex);
 
-	hWnd = CreateWindow(L"TableBuilderClass", L"Flexible Table",
-		WS_OVERLAPPEDWINDOW | WS_VSCROLL, CW_USEDEFAULT, 0,
-		CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
+	hWnd = CreateWindow(
+		L"TableBuilderClass",
+		L"Flexible Table",
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		1000,
+		1000,
+		NULL,
+		NULL,
+		hInstance, NULL
+	);
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
@@ -97,37 +108,50 @@ string GetLongestString(vector<string> row, size_t count)
 	return longestString;
 }
 
-int GetRowHeight(HDC hdc, vector<string> row, int rowsWidth)
+void SetTextBlock(HDC hdc, string text, int xStart, int yStart, int height, int width)
+{
+	RECT rect;
+	rect.top = yStart;
+	rect.left = xStart;
+	rect.right = xStart + width;
+	rect.bottom = yStart + height;
+
+	DrawText(hdc, s2ws(text).c_str(),
+		text.length(),
+		&rect,
+		DT_WORDBREAK | DT_EDITCONTROL | DT_CENTER);
+}
+
+int GetRowHeight(HDC hdc, vector<string> row, int colWidth)
 {
 	string longestString = GetLongestString(row, row.size());
 	RECT nonDrawableBlock;
 	nonDrawableBlock.left = 0;
 	nonDrawableBlock.top = 0;
 	nonDrawableBlock.bottom = 1;
-	nonDrawableBlock.right = rowsWidth;
+	nonDrawableBlock.right = colWidth;
 	int height = DrawText(hdc, s2ws(longestString).c_str(), longestString.length(), &nonDrawableBlock,
-		DT_CALCRECT | DT_WORDBREAK | DT_EDITCONTROL | DT_CENTER) + DELTA;
+		DT_CALCRECT | DT_WORDBREAK | DT_EDITCONTROL | DT_CENTER) + PADDING;
 
 	return  height;
 }
 
 void CreateTable(HDC hdc, int tableWidth, int rowsCount, int colCount)
 {
-	int yStart = 0;
-	yStart += 10;
+	int yStart = 1;
 	for (int i = 0; i < rowsCount; i++)
 	{
 		int xStart = 0;
-		int yEnd = 0;
-		int xEnd = 0;
 		DrawLine(hdc, xStart, yStart, tableWidth, yStart);
-		int height = GetRowHeight(hdc, stringMatrix[i], tableWidth);
+		int height = GetRowHeight(hdc, stringMatrix[i], tableWidth / colCount - PADDING);
 		for (int j = 0; j < colCount; j++)
 		{
-			///code
+			SetTextBlock(hdc, stringMatrix[i][j], xStart + PADDING / 2, yStart + PADDING / 2, height - PADDING / 2, tableWidth / colCount - PADDING / 2);
+			DrawLine(hdc, xStart, yStart, xStart, yStart + height);
+			xStart += tableWidth / colCount;
 		}
 
-		yStart += 60;
+		yStart += height;
 	}
 	DrawLine(hdc, 0, yStart, tableWidth, yStart);
 }
