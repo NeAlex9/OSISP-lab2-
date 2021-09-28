@@ -11,7 +11,7 @@ using namespace std;
 #define CHANGE_COL 5
 #define CHANGE_ROW 6
 #define MAX_COL 10
-#define MAX_ROW 7
+#define MAX_ROW 10
 
 int cols = 4, rows = 4;
 
@@ -19,13 +19,13 @@ RECT rect;
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void CreateTable(HDC, int, int, int, int, int);
 vector<string> stringMatrix = {
-	"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds",
-	"a", "d", "s", "d",
+	"американский телесериал в", "вввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds",
+	"a", "жанре фэнтези, основанный на цикле романов", "s", "d",
 	"", "", "", "",
-	"adыыыыыыыыыыыs", "dsыффффффффффффффффффfsd", "sdf", "ds",
-	"a", "d", "s", "d",
-	"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds",
-	"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds"
+	"adыыыыыыыыыыыs", "«Песнь льда и огня» Джорджа Р. Р. Мартина. ", "Снят под руководством Дэвида Бениоффа и Д. Б.", "ds",
+	"Уайсса для кабельного телеканала HBO. Съёмки", "велись", "в нескольких странах, включая", "d",
+	"a", "udasdasdsadd", "sdf", "ds",
+	"a", "вuasdasdsadd", "Великобританию, Мальту, Хорватию", ", Исландию и Марокко."
 };
 
 static HBRUSH hBrush = CreateSolidBrush(RGB(32, 23, 233));
@@ -63,7 +63,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		L"",
 		WS_CHILD | WS_VISIBLE | WS_BORDER | ES_NUMBER,
 		70, 50, 120, 20,
-		hWnd, /*(HMENU)CHANGE_ROW*/NULL, NULL, NULL);
+		hWnd, (HMENU)CHANGE_ROW, NULL, NULL);
 
 	HWND hWndEditColumn = CreateWindow(
 		L"Edit",
@@ -102,7 +102,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 		xStart = 30;
 		yEnd = 30;
 		tableWidth = rect.right - rect.left - xStart - yEnd;
-		CreateTable(hdc, xStart, 100, tableWidth, cols, rows);
+		CreateTable(hdc, xStart, 100, tableWidth, rows, cols);
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_COMMAND:
@@ -183,11 +183,21 @@ void DrawLine(HDC hdc, int x1, int y1, int x2, int y2)
 	LineTo(hdc, x2, y2);
 }
 
-string GetLongestString(vector<string> row, size_t count)
+string GetLongestString(vector<string> row, size_t startIndex)
 {
-	string longestString = row[0];
-	for (size_t j = 0; j < count; j++)
+	if (startIndex >= row.size())
 	{
+		return "";
+	}
+
+	string longestString = row[startIndex];
+	for (size_t j = startIndex; j < startIndex + cols; j++)
+	{
+		if (j >= row.size())
+		{
+			return longestString;
+		}
+
 		if (row[j].length() > longestString.length())
 			longestString = row[j];
 	}
@@ -209,9 +219,9 @@ void SetTextBlock(HDC hdc, string text, int xStart, int yStart, int height, int 
 		DT_WORDBREAK | DT_EDITCONTROL | DT_CENTER);
 }
 
-int GetRowHeight(HDC hdc, vector<string> row, int colWidth)
+int GetRowHeight(HDC hdc, vector<string> row, int startIndex, int colWidth)
 {
-	string longestString = GetLongestString(row, row.size());
+	string longestString = GetLongestString(row, startIndex);
 	RECT nonDrawableBlock;
 	nonDrawableBlock.left = 0;
 	nonDrawableBlock.top = 0;
@@ -236,20 +246,31 @@ HFONT GetFont(int height, int width)
 void CreateTable(HDC hdc, int xStart, int yStart, int tableWidth, int rowsCount, int colCount)
 {
 	SelectObject(hdc, GetFont(20, 6));
-	int count = 0;
+	int index = 0;
+	if (cols < 1 || rows < 1)
+	{
+		return;
+	}
+
+	int xPos = 0;
 	for (int i = 0; i < rowsCount; i++)
 	{
-		int xPos = xStart;
+		xPos = xStart;
 		DrawLine(hdc, xPos, yStart, xPos + tableWidth, yStart);
-		int height = GetRowHeight(hdc, stringMatrix[i], tableWidth / colCount - PADDING);
+		int height = GetRowHeight(hdc, stringMatrix, i * cols, tableWidth / colCount - PADDING);
 		for (int j = 0; j < colCount; j++)
 		{
-			SetTextBlock(hdc, stringMatrix[i][j], xPos + PADDING / 2, yStart + PADDING / 2, height - PADDING / 2, tableWidth / colCount - PADDING);
+			if (index < stringMatrix.size())
+			{
+				SetTextBlock(hdc, stringMatrix[index], xPos + PADDING / 2, yStart + PADDING / 2, height - PADDING / 2, tableWidth / colCount - PADDING);
+			}
+
 			DrawLine(hdc, xPos, yStart, xPos, yStart + height);
 			xPos += tableWidth / colCount;
+			index++;
 		}
 
-		DrawLine(hdc, xPos, yStart, xPos, yStart + height);
+		DrawLine(hdc, xStart + tableWidth, yStart, xStart + tableWidth, yStart + height);
 		yStart += height;
 	}
 
