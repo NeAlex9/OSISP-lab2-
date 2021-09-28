@@ -1,117 +1,133 @@
 ﻿#include <Windows.h>
 #include <commctrl.h>
-
-char name[3][12] = { "Дима","Вова","Саша" };
-char mail[3][22] = { "dima@mail.ru","vova@mail.ru","sasha@mail.ru" };
-char passwd[3][12] = { "qwerty","uiop","asdff" };
+#include <string>
+#include <vector>
+#define UNICODE
+#define DELTA 3
+using namespace std;
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
+void CreateTable(HDC, int, int, int);
+vector<vector<string>> stringMatrix = {
+	{"ads", "dsfsd", "sdf", "ds"},
+	{"ads", "dsfsd", "sdf", "ds"},
+	{"ads", "dsfsd", "sdf", "ds"},
+	{"ads", "dsfsd", "sdf", "ds"}
+};
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
-#pragma region 
-	const wchar_t CLASS_NAME[] = L"Sample Window Class";
-	WNDCLASS wc = { };
-	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
-	wc.lpszClassName = CLASS_NAME;
-	RegisterClass(&wc);
-	HWND hwnd = CreateWindowEx(
-		0,
-		CLASS_NAME,
-		L"Learn to Program Windows",
-		WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX ^ WS_MINIMIZEBOX,
-		CW_USEDEFAULT, CW_USEDEFAULT, 500, 500,
-		NULL,
-		NULL,
-		hInstance,
-		NULL
-	);
+	WNDCLASSEX wcex;
+	HWND hWnd;
+	MSG msg;
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.style = CS_DBLCLKS;
+	wcex.lpfnWndProc = WindowProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = NULL;
+	wcex.hCursor = NULL;
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = 0;
+	wcex.lpszClassName = L"TableBuilderClass";
+	wcex.hIconSm = wcex.hIcon;
+	RegisterClassEx(&wcex);
 
-	if (hwnd == NULL)
-	{
-		return 0;
-	}
-#pragma endregion CreatingMainWindow
-	ShowWindow(hwnd, nCmdShow);
+	hWnd = CreateWindow(L"TableBuilderClass", L"Flexible Table",
+		WS_OVERLAPPEDWINDOW | WS_VSCROLL, CW_USEDEFAULT, 0,
+		CW_USEDEFAULT, 0, NULL, NULL, hInstance, NULL);
 
-	MSG msg = { };
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
 	return 0;
 }
-LRESULT CALLBACK WindowProc(HWND hw, UINT msg, WPARAM wp, LPARAM lp) {
-    static HWND hListView;
-    LVCOLUMN lvc;//Столбцы
-    LVITEM lvi;//Строки
-    switch (msg) {
-    case WM_CREATE:
-    {
-//        hListView = CreateWindow(WC_LISTVIEW, L"GOOD",
-//            LVS_REPORT | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | LVS_AUTOARRANGE,
-//            0, 0, 225, 180, hw,
-//            (HMENU)1010, hInstance, NULL);
-//
-//        if (hListView == NULL)
-//            MessageBox(hw, L"", L"", MB_OK);
-//        // Вставляем столбцы
-//                              ////////////////////////////////////////
-//                                // Вставляем столбцы
-//        //memset(&lvc, 0, sizeof(lvc));//закидать нулями  первые 0 байт
-//
-//        lvc.mask = LVCF_TEXT | LVCF_SUBITEM | LVCF_WIDTH | LVCF_FMT;//Стиль таблицы
-//        //Как будет смотреться заголовок столбца , в моем случае 
-//        //выравнивание по левому краю
-//        lvc.fmt = LVCFMT_LEFT;
-//        lvc.cx = 75;//Длина столбца относительно левого края 
-//
-//        lvc.iSubItem = 0;//Индекс столбца
-//        lvc.pszText = L"Name";//Название столбца
-//        ListView_InsertColumn(hListView, 0, &lvc);//Функция вставки столбцов
-//
-//        lvc.iSubItem = 1;
-//        lvc.pszText = "Mail";
-//        ListView_InsertColumn(hListView, 1, &lvc);
-//
-//        lvc.iSubItem = 2;
-//        lvc.pszText = L"Password";
-//        ListView_InsertColumn(hListView, 2, &lvc);
-//        ////////////////////////////////////////
-//// Вставляем строки
-//        memset(&lvi, 0, sizeof(lvi));
-//
-//        lvi.mask = LVIF_TEXT | LVIF_TEXT;
-//
-//        for (int i = 0; i < 9; i++)
-//        {
-//            lvi.iItem = i;
-//            lvi.iSubItem = 0;
-//            ListView_InsertItem(hListView, &lvi);
-//
-//            lvi.iItem = i;
-//            lvi.iSubItem = 1;
-//            ListView_InsertItem(hListView, &lvi);
-//
-//            lvi.iItem = i;
-//            lvi.iSubItem = 2;
-//            ListView_InsertItem(hListView, &lvi);
-//        }
-//        ///////////////////////////////////////////////
-//        //Вставить Данные способ ver_1
-//        for (int i = 0; i < 3; i++)
-//            ListView_SetItemText(hListView, i, 0, name[i]);//Вставить в строку i столбца 0 из массива name
-//        for (int i = 0; i < 3; i++)
-//            ListView_SetItemText(hListView, i, 1, mail[i]);//Вставить в строку i столбца 1 из массива mail
-//        for (int i = 0; i < 3; i++)
-//            ListView_SetItemText(hListView, i, 2, passwd[i]);//Вставить в строку i столбца 2 из массива passwd
-//            ///////////////////////////////////////////////
-        return 0;
-    }
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        return 0;
-    }
-    return DefWindowProc(hw, msg, wp, lp);
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	HDC hdc;
+	PAINTSTRUCT ps;
+	switch (msg) {
+	case WM_PAINT:
+		hdc = BeginPaint(hwnd, &ps);
+		RECT rec;
+		GetWindowRect(hwnd, &rec);
+		CreateTable(hdc, rec.right - rec.left, 4, 4);
+		EndPaint(hwnd, &ps);
+		break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+	return DefWindowProc(hwnd, msg, wp, lp);
+}
+
+wstring s2ws(const std::string& s)
+{
+	int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r;
+}
+
+void DrawLine(HDC hdc, int x1, int y1, int x2, int y2)
+{
+	MoveToEx(hdc, x1, y1, NULL);
+	LineTo(hdc, x2, y2);
+}
+
+string GetLongestString(vector<string> row, size_t count)
+{
+	string longestString = row[0];
+	for (size_t j = 0; j < count; j++)
+	{
+		if (row[j].length() > longestString.length())
+			longestString = row[j];
+	}
+
+	return longestString;
+}
+
+int GetRowHeight(HDC hdc, vector<string> row, int rowsWidth)
+{
+	string longestString = GetLongestString(row, row.size());
+	RECT nonDrawableBlock;
+	nonDrawableBlock.left = 0;
+	nonDrawableBlock.top = 0;
+	nonDrawableBlock.bottom = 1;
+	nonDrawableBlock.right = rowsWidth;
+	int height = DrawText(hdc, s2ws(longestString).c_str(), longestString.length(), &nonDrawableBlock,
+		DT_CALCRECT | DT_WORDBREAK | DT_EDITCONTROL | DT_CENTER) + DELTA;
+
+	return  height;
+}
+
+void CreateTable(HDC hdc, int tableWidth, int rowsCount, int colCount)
+{
+	int yStart = 0;
+	yStart += 10;
+	for (int i = 0; i < rowsCount; i++)
+	{
+		int xStart = 0;
+		int yEnd = 0;
+		int xEnd = 0;
+		DrawLine(hdc, xStart, yStart, tableWidth, yStart);
+		int height = GetRowHeight(hdc, stringMatrix[i], tableWidth);
+		for (int j = 0; j < colCount; j++)
+		{
+			///code
+		}
+
+		yStart += 60;
+	}
+	DrawLine(hdc, 0, yStart, tableWidth, yStart);
 }
