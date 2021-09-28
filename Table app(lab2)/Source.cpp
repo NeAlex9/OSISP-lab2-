@@ -9,12 +9,12 @@ using namespace std;
 #define PADDING 20
 
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
-void CreateTable(HDC, int, int, int);
+void CreateTable(HDC, int, int, int, int, int);
 vector<vector<string>> stringMatrix = {
-	{"a", "dkkkkkkkkkkkkkyghjiuygvhjgiyufghi7ygudasdasdasdsadd", "sdf", "ds"},
+	{"a", "dkkkkkkkkkkkkkyghjiuygyвывввывuвыаываыfghi7ygudasdasdasdsadd", "sdf", "ds"},
 	{"a", "d", "s", "d"},
-	{"ads", "dsfsd", "sdf", "ds"},
-	{"ads", "dsfsd", "sdf", "ds"}
+	{"", "", "", ""},
+	{"adыыыыыыыыыыыs", "dsыффффффффффффффффффfsd", "sdf", "ds"}
 };
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
@@ -63,18 +63,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	HDC hdc;
 	PAINTSTRUCT ps;
+	int xStart = 0;
+	int yEnd = 0;
+	int tableWidth = 0;
 	switch (msg) {
 	case WM_PAINT:
 		hdc = BeginPaint(hwnd, &ps);
 		RECT rec;
 		GetWindowRect(hwnd, &rec);
-		CreateTable(hdc, rec.right - rec.left, 4, 4);
+		xStart = 30;
+		yEnd = 30;
+		tableWidth = rec.right - rec.left - xStart - yEnd;
+		CreateTable(hdc, xStart, 100, tableWidth, 4, 4);
 		EndPaint(hwnd, &ps);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
 	}
+
 	return DefWindowProc(hwnd, msg, wp, lp);
 }
 
@@ -136,22 +143,34 @@ int GetRowHeight(HDC hdc, vector<string> row, int colWidth)
 	return  height;
 }
 
-void CreateTable(HDC hdc, int tableWidth, int rowsCount, int colCount)
+HFONT GetFont(int height, int width)
 {
-	int yStart = 1;
+	HFONT hFont = CreateFont(height, width, 0, 0, 2, 0, 
+false, FALSE, RUSSIAN_CHARSET, 20,
+		20, 20, 20,
+		TEXT("Times New Roman"));
+
+	return hFont;
+}
+
+void CreateTable(HDC hdc, int xStart, int yStart, int tableWidth, int rowsCount, int colCount)
+{
+	SelectObject(hdc, GetFont(20, 6));
 	for (int i = 0; i < rowsCount; i++)
 	{
-		int xStart = 0;
-		DrawLine(hdc, xStart, yStart, tableWidth, yStart);
+		int xPos = xStart;
+		DrawLine(hdc, xPos, yStart,  xPos + tableWidth, yStart);
 		int height = GetRowHeight(hdc, stringMatrix[i], tableWidth / colCount - PADDING);
 		for (int j = 0; j < colCount; j++)
 		{
-			SetTextBlock(hdc, stringMatrix[i][j], xStart + PADDING / 2, yStart + PADDING / 2, height - PADDING / 2, tableWidth / colCount - PADDING / 2);
-			DrawLine(hdc, xStart, yStart, xStart, yStart + height);
-			xStart += tableWidth / colCount;
+			SetTextBlock(hdc, stringMatrix[i][j], xPos + PADDING / 2, yStart + PADDING / 2, height - PADDING / 2, tableWidth / colCount - PADDING);
+			DrawLine(hdc, xPos, yStart, xPos, yStart + height);
+			xPos += tableWidth / colCount;
 		}
 
+		DrawLine(hdc, xPos, yStart, xPos, yStart + height);
 		yStart += height;
 	}
-	DrawLine(hdc, 0, yStart, tableWidth, yStart);
+
+	DrawLine(hdc, xStart, yStart, xStart + tableWidth, yStart);
 }
